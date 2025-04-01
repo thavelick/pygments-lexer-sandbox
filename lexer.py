@@ -540,7 +540,9 @@ class RegexLexerMeta(LexerMeta):
     def _process_regex(cls, regex, rflags, state):
         """Preprocess the regular expression component of a token definition."""
         if isinstance(regex, Future):
+            print("future")
             regex = regex.get()
+        print("in _process_regex 1")
         return re.compile(regex, rflags).match
 
     def _process_token(cls, token):
@@ -966,6 +968,7 @@ class ProfilingRegexLexerMeta(RegexLexerMeta):
     """Metaclass for ProfilingRegexLexer, collects regex timing info."""
 
     def _process_regex(cls, regex, rflags, state):
+        print("in _process_regex 2")
         if isinstance(regex, words):
             rex = regex_opt(regex.words, prefix=regex.prefix, suffix=regex.suffix)
         else:
@@ -973,9 +976,11 @@ class ProfilingRegexLexerMeta(RegexLexerMeta):
         compiled = re.compile(rex, rflags)
 
         def match_func(text, pos, endpos=sys.maxsize):
+            print("****** start ********")
             info = cls._prof_data[-1].setdefault((state, rex), [0, 0.0])
             t0 = time.time()
             res = compiled.match(text, pos, endpos)
+            print("****** finish ********")
             t1 = time.time()
             info[0] += 1
             info[1] += t1 - t0
